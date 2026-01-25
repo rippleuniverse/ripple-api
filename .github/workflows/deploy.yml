@@ -1,0 +1,59 @@
+name: Ripple Admin Deployment
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+
+      - name: Archive backend files
+        run: |
+          tar --ignore-failed-read -czf backend.tar.gz \
+          --exclude=.git \
+          --exclude=vendor \
+          .
+
+      - name: Upload files via SCP
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          key: ${{secrets.SSH_KEY}}
+          port: 21098
+          source: "backend.tar.gz"
+          target: "api.rippleuniverse.org"
+
+      - name: Extract files on remote server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          key: ${{secrets.SSH_KEY}}
+          port: 21098
+          script: |
+            cd api.rippleuniverse.org
+            tar -xzf backend.tar.gz
+            rm backend.tar.gz
+
+      - name: Install dependencies and migrate database
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          key: ${{secrets.SSH_KEY}}
+          port: 21098
+          script: |
+            cd api.rippleuniverse.org
+            composer install --no-dev
+            php artisan migrate --force
