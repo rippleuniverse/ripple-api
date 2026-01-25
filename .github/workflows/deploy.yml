@@ -55,5 +55,5 @@ jobs:
           port: 21098
           script: |
             cd api.rippleuniverse.org
-            composer install --no-dev
+            composer install
             php artisan migrate --force
