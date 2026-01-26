@@ -18,9 +18,7 @@ class SubscriptionsController extends Controller
 
         NewsletterSubscription::create($data);
         Mail::to($data['email'])->send(new SubscribedMail());
-
-//        TODO: Send email to user
-
+        
         return $this->success(null, 'Subscribed to newsletter successfully.');
     }
 }
