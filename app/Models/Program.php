@@ -36,7 +36,7 @@ class Program extends Model
 
     public function category(): BelongsTo
     {
-        return $this->belongsTo(ProgramCategory::class);
+        return $this->belongsTo(ProgramCategory::class, 'program_category_id');
     }
 
     public function modules(): HasMany

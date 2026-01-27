@@ -27,11 +27,11 @@ class ProgramResource extends JsonResource
             ],
             'price' => currencyFormat($this->price),
             'rating' => [
-                'avg_rating' => $this->ratings()->avg('rating'),
+                'avg_rating' => (int)$this->ratings()->avg('rating'),
                 'count' => $this->ratings()->count()
             ],
-            'featured_image' => $this->getFilePath($this->featured_image),
-            'created_at' => $this->created_at,
+            'featured_image' => str_replace(config('app.url') . '//', config('app.url') . '/', $this->getFilePath($this->featured_image)),
+            'created_at' => $this->created_at->format('Y-m-d'),
         ];
     }
 }

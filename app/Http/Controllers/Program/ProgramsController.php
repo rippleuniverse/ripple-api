@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Program;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Program\CategoryResource;
 use App\Http\Resources\Program\ModuleResource;
 use App\Http\Resources\Program\ProgramResource;
 use App\Models\Program;
+use App\Models\ProgramCategory;
 use App\Traits\Files;
 use App\Traits\Pagination;
 use Illuminate\Http\Request;
@@ -30,18 +32,19 @@ class ProgramsController extends Controller
         $data = [
             'id' => $program->id,
             'name' => $program->name,
+            'description' => $program->description,
             'author' => $program->author,
             'skills' => explode(',', $program->skills),
             'experience_level' => $program->experience_level,
             'category' => [
-                'id' => (string)$program->program_category_id,
+                'id' => (string) $program->program_category_id,
                 'name' => $program->category->name,
                 'slug' => $program->category->slug,
             ],
             'formatted_price' => currencyFormat($program->price),
-            'price' => (float)$program->price,
+            'price' => (float) $program->price,
             'rating' => [
-                'avg_rating' => $program->ratings()->avg('rating'),
+                'avg_rating' => $program->ratings()->avg('rating') ?? 0,
                 'count' => $program->ratings()->count()
             ],
             'featured_image' => $this->getFilePath($program->featured_image),
@@ -52,17 +55,27 @@ class ProgramsController extends Controller
         return $this->success($data);
     }
 
+    public function viewCategories()
+    {
+        $categories = ProgramCategory::all();
+        $list = CategoryResource::collection($categories);
+
+        return $this->success($list);
+    }
+
     public function store(Request $request)
     {
-        $data = $request->validate([
+        $data = $request->validate(
+            [
                 'category_id' => ['required', 'exists:program_categories,id'],
                 'name' => ['required', 'string', 'max:255'],
                 'author' => ['required', 'string', 'max:255'],
                 'experience_level' => ['required', 'string', 'in:beginner,intermediate,expert'],
                 'price' => ['required', 'numeric', 'min:0'],
                 'skills' => ['required', 'array', 'min:1'],
+                'description' => ['required', 'string'],
                 'skills.*' => ['required', 'string', 'max:255'],
-//                Max of 5mb
+                //                Max of 5mb
                 'featured_image' => ['required', 'mimes:png,jpeg,jpg', 'max:5120'],
                 'modules' => ['required', 'array', 'min:1'],
                 'modules.*.module_no' => ['required', 'numeric'],
@@ -87,13 +100,17 @@ class ProgramsController extends Controller
 
     public function update(Program $program, Request $request)
     {
-        $data = $request->validate([
+        $data = $request->validate(
+            [
                 'category_id' => ['required', 'exists:program_categories,id'],
                 'name' => ['required', 'string', 'max:255'],
                 'author' => ['required', 'string', 'max:255'],
                 'experience_level' => ['required', 'string', 'in:beginner,intermediate,expert'],
                 'price' => ['required', 'numeric', 'min:0'],
-//                Max of 5mb
+                'skills' => ['required', 'array', 'min:1'],
+                'skills.*' => ['required', 'string', 'max:255'],
+                'description' => ['required', 'string'],
+                //                Max of 5mb
                 'featured_image' => ['nullable', 'mimes:png,jpeg,jpg', 'max:5120'],
                 'modules' => ['required', 'array', 'min:1'],
                 'modules.*.module_no' => ['required', 'numeric'],

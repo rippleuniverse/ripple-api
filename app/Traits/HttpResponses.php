@@ -12,7 +12,7 @@ trait HttpResponses
         return response()->json([
             'data' => $data,
             'message' => $message
-        ], $code);
+        ], $code, [], JSON_UNESCAPED_SLASHES);
     }
 
     public function failed($data, $code, $message = 'Failed'): JsonResponse
