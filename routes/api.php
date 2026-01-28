@@ -44,4 +44,19 @@ namespace('App\Http\Controllers')->group(function () {
         Route::get('{program}/reviews', 'Program\ProgramsController@reviews');
     });
 
+    Route::prefix('events')->group(function () {
+        Route::get('', 'Event\EventsController@viewAll');
+        Route::get('{event}', 'Event\EventsController@view');
+
+        Route::middleware([
+            'auth:sanctum',
+            VerifiedMiddleware::class,
+            RoleAuthorizeMiddleware::class . ':admin'
+        ])->group(function () {
+            Route::post('', 'Event\EventsController@store');
+            Route::post('/{event}', 'Event\EventsController@update');
+            Route::delete('/{event}', 'Event\EventsController@destroy');
+        });
+    });
+
 });
