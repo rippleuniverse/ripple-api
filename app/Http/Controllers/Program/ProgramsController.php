@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Program\CategoryResource;
 use App\Http\Resources\Program\ModuleResource;
 use App\Http\Resources\Program\ProgramResource;
+use App\Http\Resources\Program\RatingResource;
 use App\Models\Program;
 use App\Models\ProgramCategory;
 use App\Traits\Files;
@@ -37,12 +38,12 @@ class ProgramsController extends Controller
             'skills' => explode(',', $program->skills),
             'experience_level' => $program->experience_level,
             'category' => [
-                'id' => (string) $program->program_category_id,
+                'id' => (string)$program->program_category_id,
                 'name' => $program->category->name,
                 'slug' => $program->category->slug,
             ],
             'formatted_price' => currencyFormat($program->price),
-            'price' => (float) $program->price,
+            'price' => (float)$program->price,
             'rating' => [
                 'avg_rating' => $program->ratings()->avg('rating') ?? 0,
                 'count' => $program->ratings()->count()
@@ -96,6 +97,26 @@ class ProgramsController extends Controller
 
         return $this->success(null, 'Program created successfully.');
 
+    }
+
+    public function reviews(Program $program)
+    {
+        $ratings = $program->ratings()->latest()->paginate(10);
+        $list = RatingResource::collection($ratings);
+        $data = $this->paginatedData($ratings, $list);
+        return $this->success($data);
+    }
+
+    public function viewRelated(Program $program)
+    {
+        $programs = Program::where('program_category_id', $program->program_category_id)
+            ->where('id', '!=', $program->id)
+            ->latest()
+            ->take(8)
+            ->get();
+        $list = ProgramResource::collection($programs);
+
+        return $this->success($list);
     }
 
     public function update(Program $program, Request $request)

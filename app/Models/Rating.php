@@ -11,10 +11,16 @@ class Rating extends Model
         'review',
         'rating',
         'program_id',
+        'user_id'
     ];
 
     public function program(): BelongsTo
     {
         return $this->belongsTo(Program::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

@@ -40,6 +40,8 @@ namespace('App\Http\Controllers')->group(function () {
         Route::get('', 'Program\ProgramsController@viewAll');
         Route::get('categories', 'Program\ProgramsController@viewCategories');
         Route::get('{program}', 'Program\ProgramsController@view');
+        Route::get('{program}/related', 'Program\ProgramsController@viewRelated');
+        Route::get('{program}/reviews', 'Program\ProgramsController@reviews');
     });
 
 });
