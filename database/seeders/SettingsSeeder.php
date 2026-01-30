@@ -15,7 +15,7 @@ class SettingsSeeder extends Seeder
     public function run(): void
     {
         Settings::factory()->create([
-            'site_unlock_password' => Hash::make('password'),
+            'site_unlock_password' => Hash::make('Ripple!!Secure374mnb'),
         ]);
     }
 }
