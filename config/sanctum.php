@@ -2,7 +2,6 @@
 
 use Laravel\Sanctum\Sanctum;
 
-const SANCTUM_EXPIRATION_MINUTES = 60 * 24;
 
 return [
 
@@ -21,7 +20,7 @@ return [
         '%s%s',
         'localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,::1',
         Sanctum::currentApplicationUrlWithPort(),
-    // Sanctum::currentRequestHost(),
+        // Sanctum::currentRequestHost(),
     ))),
 
     /*
@@ -49,7 +48,7 @@ return [
     |
     */
 
-    'expiration' => SANCTUM_EXPIRATION_MINUTES,
+    'expiration' => 60 * 24, // 1 day
 
     /*
     |--------------------------------------------------------------------------
