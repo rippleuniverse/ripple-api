@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Event extends Model
 {
@@ -13,7 +14,11 @@ class Event extends Model
         'date',
         'access',
         'type',
-        'description'
+        'description',
+        'what_to_expect',
+        'who_to_expect',
+        'facilitators',
+        'agendas',
     ];
 
     public function scopeBuilder(Builder $builder): void
@@ -35,6 +40,15 @@ class Event extends Model
     {
         return [
             'date' => 'date',
+            'what_to_expect' => 'array',
+            'who_to_expect' => 'array',
+            'facilitators' => 'array',
+            'agendas' => 'array',
         ];
+    }
+
+    public function tickets(): HasMany
+    {
+        return $this->hasMany(EventTicket::class, 'event_id');
     }
 }

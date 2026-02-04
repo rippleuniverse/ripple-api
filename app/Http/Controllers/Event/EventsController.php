@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Event;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Event\EventResource;
+use App\Http\Resources\Event\TicketResource;
 use App\Models\Event;
+use App\Models\EventTicket;
 use App\Traits\Files;
 use App\Traits\Pagination;
 use Illuminate\Http\Request;
@@ -24,7 +26,21 @@ class EventsController extends Controller
 
     public function view(Event $event)
     {
-        $data = new EventResource($event);
+        $data = [
+            'id' => $event->id,
+            'featured_image' => $this->getFilePath($event->featured_image),
+            'title' => $event->title,
+            'description' => $event->description,
+            'date' => $event->date->format('Y-m-d'),
+            'access' => $event->access,
+            'type' => $event->type,
+            'what_to_expect' => json_decode($event->what_to_expect),
+            'who_to_expect' => json_decode($event->who_to_expect),
+            'agendas' => json_decode($event->agendas),
+            'facilitators' => json_decode($event->facilitators),
+            'tickets' => TicketResource::collection($event->tickets),
+            'created_at' => $event->created_at->format('Y-m-d'),
+        ];
         return $this->success($data);
     }
 
@@ -38,12 +54,59 @@ class EventsController extends Controller
             'featured_image' => ['required', 'mimes:jpg,jpeg,png', 'max:5120'],
             'access' => ['required', 'in:free,paid'],
             'type' => ['required', 'in:physical,online'],
+            'what_to_expect' => ['array'],
+            'what_to_expect.*' => ['required', 'string', 'max:191'],
+            'who_to_expect' => ['array'],
+            'who_to_expect.*' => ['required', 'string', 'max:191'],
+            'agendas' => ['array'],
+            'agendas.*' => ['required', 'string', 'max:191'],
+            'facilitators' => ['array'],
+            'facilitators.*.name' => ['required', 'string', 'max:80'],
+            'facilitators.*.role' => ['required', 'string', 'max:80'],
+            'facilitators.*.company' => ['required', 'string', 'max:80'],
+            'facilitators.*.description' => ['required', 'string', 'max:80'],
+            'tickets' => ['required', 'array', 'min:1'],
+            'tickets.*.name' => ['required', 'string', 'max:191'],
+            'tickets.*.price' => ['array', 'min:2', 'max:2'],
+            'tickets.*.price.0.currency' => ['required', 'string', 'in:NGN'],
+            'tickets.*.price.0.amount' => ['required', 'numeric:', 'min:0'],
+            'tickets.*.price.1.currency' => ['required', 'string', 'in:USD'],
+            'tickets.*.price.1.amount' => ['required', 'numeric:', 'min:0'],
+            'tickets.*.features' => ['array'],
+            'tickets.*.features.*' => ['required', 'string', 'max:191'],
+
+
         ]);
 
         $featuredImage = $this->uploadFile($request->file('featured_image'), 'events');
+        $whatToExpect = json_encode($data['what_to_expect'] ?? []);
+        $whoToExpect = json_encode($data['who_to_expect'] ?? []);
+        $agendas = json_encode($data['agendas'] ?? []);
+        $facilitators = json_encode($data['facilitators'] ?? []);
 
         $data['featured_image'] = $featuredImage;
-        Event::create($data);
+        $event = Event::create([
+            'title' => $data['title'],
+            'description' => $data['description'],
+            'date' => $data['date'],
+            'featured_image' => $data['featured_image'],
+            'access' => $data['access'],
+            'type' => $data['type'],
+            'what_to_expect' => $whatToExpect,
+            'who_to_expect' => $whoToExpect,
+            'agendas' => $agendas,
+            'facilitators' => $facilitators,
+        ]);
+        $tickets = array_map(function ($ticket) use ($event) {
+            return [
+                'name' => $ticket['name'],
+                'price' => json_encode($ticket['price']),
+                'features' => json_encode($ticket['features'] ?? []),
+            ];
+        }, $data['tickets'] ?? []);
+
+        count($tickets) > 0 && $event->tickets()->createMany($tickets);
+
         return $this->success(null, 'Event created successfully.');
     }
 
@@ -56,15 +119,69 @@ class EventsController extends Controller
             'featured_image' => ['nullable', 'mimes:jpg,jpeg,png', 'max:5120'],
             'access' => ['required', 'in:free,paid'],
             'type' => ['required', 'in:physical,online'],
+            'what_to_expect' => ['array'],
+            'what_to_expect.*' => ['required', 'string', 'max:191'],
+            'who_to_expect' => ['array'],
+            'who_to_expect.*' => ['required', 'string', 'max:191'],
+            'agendas' => ['array'],
+            'agendas.*' => ['required', 'string', 'max:191'],
+            'facilitators' => ['array'],
+            'facilitators.*.name' => ['required', 'string', 'max:80'],
+            'facilitators.*.role' => ['required', 'string', 'max:80'],
+            'facilitators.*.company' => ['required', 'string', 'max:80'],
+            'facilitators.*.description' => ['required', 'string', 'max:80'],
+            'tickets' => ['required', 'array', 'min:1'],
+            'tickets.*.id' => ['string', 'max:191'],
+            'tickets.*.name' => ['required', 'string', 'max:191'],
+            'tickets.*.price' => ['array', 'min:2', 'max:2'],
+            'tickets.*.price.0.currency' => ['required', 'string', 'in:NGN'],
+            'tickets.*.price.0.amount' => ['required', 'numeric:', 'min:0'],
+            'tickets.*.price.1.currency' => ['required', 'string', 'in:USD'],
+            'tickets.*.price.1.amount' => ['required', 'numeric:', 'min:0'],
+            'tickets.*.features' => ['array'],
+            'tickets.*.features.*' => ['required', 'string', 'max:191'],
         ]);
+
+        $whatToExpect = json_encode($data['what_to_expect'] ?? []);
+        $whoToExpect = json_encode($data['who_to_expect'] ?? []);
+        $agendas = json_encode($data['agendas'] ?? []);
+        $facilitators = json_encode($data['facilitators'] ?? []);
+        $data['what_to_expect'] = $whatToExpect;
+        $data['who_to_expect'] = $whoToExpect;
+        $data['agendas'] = $agendas;
+        $data['facilitators'] = $facilitators;
+
         $featuredImage = $request->file('featured_image') ?
             $this->uploadFile($request->file('featured_image'), 'events') :
             $event->featured_image;
         $data['featured_image'] = $featuredImage;
 
+        $tickets = array_map(function ($ticket) use ($event) {
+            return [
+                'id' => $ticket['id'] ?? null,
+                'name' => $ticket['name'],
+                'price' => json_encode($ticket['price']),
+                'features' => json_encode($ticket['features'] ?? []),
+            ];
+        }, $data['tickets'] ?? []);
+
+        foreach ($tickets as $ticket) {
+            $event->tickets()->updateOrCreate(['id' => $ticket['id']], [
+                'name' => $ticket['name'],
+                'price' => $ticket['price'],
+                'features' => $ticket['features']
+            ]);
+        }
+
         $event->update($data);
         return $this->success(null, 'Event updated successfully.');
 
+    }
+
+    public function destroyTicket(EventTicket $ticket)
+    {
+        $ticket->delete();
+        return $this->success(null, 'Ticket deleted successfully.');
     }
 
     public function destroy(Event $event)
