@@ -57,4 +57,4 @@ jobs:
             cd api.rippleuniverse.org
             composer install
             php artisan migrate:fresh --force
-            php artisan db:seed
+            php artisan db:seed --force
