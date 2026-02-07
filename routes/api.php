@@ -46,6 +46,7 @@ namespace('App\Http\Controllers')->group(function () {
 
     Route::prefix('events')->group(function () {
         Route::get('', 'Event\EventsController@viewAll');
+        Route::get('categories', 'Event\EventsController@viewCategories');
         Route::get('{event}', 'Event\EventsController@view');
 
         Route::middleware([
@@ -54,6 +55,7 @@ namespace('App\Http\Controllers')->group(function () {
             RoleAuthorizeMiddleware::class . ':admin'
         ])->group(function () {
             Route::post('', 'Event\EventsController@store');
+            Route::delete('/{event}/images', 'Event\EventsController@deleteImage');
             Route::post('/{event}', 'Event\EventsController@update');
             Route::delete('/{event}', 'Event\EventsController@destroy');
             Route::delete('/tickets/{ticket}', 'Event\EventsController@destroyTicket');

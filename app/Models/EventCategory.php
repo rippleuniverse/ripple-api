@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-class ProgramCategory extends Model
+class EventCategory extends Model
 {
     use HasFactory;
 
@@ -20,12 +20,12 @@ class ProgramCategory extends Model
     {
         parent::boot();
 
-        static::creating(function (ProgramCategory $model) {
+        static::creating(function (EventCategory $model) {
             $slug = Str::slug($model->name);
-            $slugExists = ProgramCategory::where('slug', $slug)->exists();
+            $slugExists = EventCategory::where('slug', $slug)->exists();
 
             if ($slugExists) {
-                $lastSlugId = (int)ProgramCategory::latest()->first()->id;
+                $lastSlugId = (int)EventCategory::latest()->first()->id;
                 $slugStr = $slug . '-' . ($lastSlugId + 1);
             } else {
                 $slugStr = $slug;
@@ -35,8 +35,9 @@ class ProgramCategory extends Model
         });
     }
 
-    public function programs(): HasMany
+
+    public function events(): HasMany
     {
-        return $this->hasMany(Program::class);
+        return $this->hasMany(Event::class, 'event_category_id');
     }
 }

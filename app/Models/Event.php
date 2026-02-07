@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Event extends Model
@@ -19,6 +20,8 @@ class Event extends Model
         'who_to_expect',
         'facilitators',
         'agendas',
+        'images',
+        'event_category_id',
     ];
 
     public function scopeBuilder(Builder $builder): void
@@ -33,6 +36,9 @@ class Event extends Model
         });
         $builder->when(request('access'), function ($query, $access) {
             $query->where('access', $access);
+        });
+        $builder->when(request('event_category_id'), function ($query, $categoryId) {
+            $query->where('event_category_id', $categoryId);
         });
     }
 
@@ -50,5 +56,10 @@ class Event extends Model
     public function tickets(): HasMany
     {
         return $this->hasMany(EventTicket::class, 'event_id');
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(EventCategory::class, 'event_category_id');
     }
 }

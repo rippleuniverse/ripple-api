@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Event;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Event\CategoryResource;
 use App\Http\Resources\Event\EventResource;
 use App\Http\Resources\Event\TicketResource;
 use App\Models\Event;
+use App\Models\EventCategory;
 use App\Models\EventTicket;
 use App\Traits\Files;
 use App\Traits\Pagination;
@@ -29,11 +31,16 @@ class EventsController extends Controller
         $data = [
             'id' => $event->id,
             'featured_image' => $this->getFilePath($event->featured_image),
+            'images' => $this->getFilePaths(json_decode($event->images, true)) ?? [],
             'title' => $event->title,
             'description' => $event->description,
             'date' => $event->date->format('Y-m-d'),
             'access' => $event->access,
             'type' => $event->type,
+            'category' => [
+                'id' => (string)$event->category->id,
+                'name' => $event->category->name,
+            ],
             'what_to_expect' => json_decode($event->what_to_expect),
             'who_to_expect' => json_decode($event->who_to_expect),
             'agendas' => json_decode($event->agendas),
@@ -44,6 +51,14 @@ class EventsController extends Controller
         return $this->success($data);
     }
 
+    public function viewCategories()
+    {
+        $categories = EventCategory::all();
+        $data = CategoryResource::collection($categories);
+
+        return $this->success($data);
+    }
+
     public function store(Request $request)
     {
 
@@ -51,7 +66,10 @@ class EventsController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'date' => ['required', 'date'],
+            'category_id' => ['required', 'exists:event_categories,id'],
             'featured_image' => ['required', 'mimes:jpg,jpeg,png', 'max:5120'],
+            'images' => ['array', 'max:4'],
+            'images.*' => ['required', 'mimes:jpg,jpeg,png', 'max:5120'],
             'access' => ['required', 'in:free,paid'],
             'type' => ['required', 'in:physical,online'],
             'what_to_expect' => ['array'],
@@ -74,11 +92,11 @@ class EventsController extends Controller
             'tickets.*.price.1.amount' => ['required', 'numeric:', 'min:0'],
             'tickets.*.features' => ['array'],
             'tickets.*.features.*' => ['required', 'string', 'max:191'],
-
-
         ]);
 
         $featuredImage = $this->uploadFile($request->file('featured_image'), 'events');
+        $images = $request->file('images') ?
+            $this->uploadFiles($request->file('images'), 'events') : [];
         $whatToExpect = json_encode($data['what_to_expect'] ?? []);
         $whoToExpect = json_encode($data['who_to_expect'] ?? []);
         $agendas = json_encode($data['agendas'] ?? []);
@@ -89,9 +107,11 @@ class EventsController extends Controller
             'title' => $data['title'],
             'description' => $data['description'],
             'date' => $data['date'],
+            'images' => json_encode($images),
             'featured_image' => $data['featured_image'],
             'access' => $data['access'],
             'type' => $data['type'],
+            'event_category_id' => $data['category_id'],
             'what_to_expect' => $whatToExpect,
             'who_to_expect' => $whoToExpect,
             'agendas' => $agendas,
@@ -117,8 +137,11 @@ class EventsController extends Controller
             'description' => ['required', 'string'],
             'date' => ['required', 'date'],
             'featured_image' => ['nullable', 'mimes:jpg,jpeg,png', 'max:5120'],
+            'images' => ['array', 'max:4'],
+            'images.*' => ['required', 'mimes:jpg,jpeg,png', 'max:5120'],
             'access' => ['required', 'in:free,paid'],
             'type' => ['required', 'in:physical,online'],
+            'category_id' => ['required', 'exists:event_categories,id'],
             'what_to_expect' => ['array'],
             'what_to_expect.*' => ['required', 'string', 'max:191'],
             'who_to_expect' => ['array'],
@@ -156,6 +179,12 @@ class EventsController extends Controller
             $event->featured_image;
         $data['featured_image'] = $featuredImage;
 
+        $images = $request->file('images') ?
+            $this->uploadFiles($request->file('images'), 'events') :
+            [];
+        $newImages = array_merge(json_decode($event->images), $images);
+        $data['images'] = $newImages;
+
         $tickets = array_map(function ($ticket) use ($event) {
             return [
                 'id' => $ticket['id'] ?? null,
@@ -188,5 +217,20 @@ class EventsController extends Controller
     {
         $event->delete();
         return $this->success(null, 'Event deleted successfully.');
+    }
+
+    public function deleteImage(Event $event, Request $request)
+    {
+        $data = $request->validate([
+            'index' => ['required', 'integer'],
+        ]);
+
+        $index = $data['index'];
+        $images = json_decode($event->images, true);
+        unset($images[$index]);
+        $images = array_values($images);
+        $event->images = json_encode($images);
+        $event->save();
+        return $this->success(null, 'Image deleted successfully.');
     }
 }
