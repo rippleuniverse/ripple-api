@@ -62,6 +62,35 @@ namespace('App\Http\Controllers')->group(function () {
         });
     });
 
+    Route::prefix('roles')->group(function () {
+        Route::middleware([
+            'auth:sanctum',
+            VerifiedMiddleware::class,
+            RoleAuthorizeMiddleware::class . ':admin'
+        ])->group(function () {
+            Route::get('/all', 'OpenRoles\OpenRolesController@viewAllWithoutPagination');
+            Route::post('', 'OpenRoles\OpenRolesController@store');
+            Route::patch('{role}', 'OpenRoles\OpenRolesController@update');
+            Route::delete('{role}', 'OpenRoles\OpenRolesController@destroy');
+        });
+
+        Route::get('', 'OpenRoles\OpenRolesController@viewAll');
+        Route::get('{role}', 'OpenRoles\OpenRolesController@view');
+    });
+
+    Route::prefix('job-applications')->group(function () {
+        Route::post('', 'OpenRoles\ApplicationController@store');
+        Route::middleware([
+            'auth:sanctum',
+            VerifiedMiddleware::class,
+            RoleAuthorizeMiddleware::class . ':admin'
+        ])->group(function () {
+            Route::get('', 'OpenRoles\ApplicationController@viewAll');
+            Route::get('{application}', 'OpenRoles\ApplicationController@view');
+            Route::delete('{application}', 'OpenRoles\ApplicationController@destroy');
+        });
+    });
+
     Route::prefix('settings')->group(function () {
         Route::post('site-login', 'Settings\SettingsController@siteLogin');
         Route::get('check-site-lock-status', 'Settings\SettingsController@checkSiteLockStatus');

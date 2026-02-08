@@ -56,4 +56,6 @@ jobs:
           script: |
             cd api.rippleuniverse.org
             composer install
+            composer dump-autoload
             php artisan migrate --force
+            php artisan db:seed --force
