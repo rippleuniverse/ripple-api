@@ -24,7 +24,7 @@ class ProductItemResource extends JsonResource
             'about' => $this->about,
             'benefits' => sanitizedJsonDecode($this->benefits),
             'target_users' => sanitizedJsonDecode($this->target_users),
-            'how_to_use' => sanitizedJsonDecode($this->how_to_use),
+            'how_to_use' => $this->how_to_use,
             'access_delivery' => sanitizedJsonDecode($this->access_delivery),
             'category' => [
                 'id' => (string)$this->product_category_id,

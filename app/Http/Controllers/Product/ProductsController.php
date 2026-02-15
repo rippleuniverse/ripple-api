@@ -34,8 +34,7 @@ class ProductsController extends Controller
             'benefits.*' => ['required', 'string', 'max:191'],
             'target_users' => ['array'],
             'target_users.*' => ['required', 'string', 'max:191'],
-            'how_to_use' => ['array'],
-            'how_to_use.*' => ['required', 'string', 'max:191'],
+            'how_to_use' => ['nullable', 'string'],
             'access_delivery' => ['array'],
             'access_delivery.*' => ['required', 'string', 'max:191']
         ]);
@@ -45,7 +44,6 @@ class ProductsController extends Controller
         $data['price'] = json_encode($data['price']);
         $data['benefits'] = json_encode($data['benefits'] ?? []);
         $data['target_users'] = json_encode($data['target_users'] ?? []);
-        $data['how_to_use'] = json_encode($data['how_to_use'] ?? []);
         $data['access_delivery'] = json_encode($data['access_delivery'] ?? []);
         Product::create($data);
 
@@ -100,8 +98,7 @@ class ProductsController extends Controller
             'benefits.*' => ['required', 'string', 'max:191'],
             'target_users' => ['array'],
             'target_users.*' => ['required', 'string', 'max:191'],
-            'how_to_use' => ['array'],
-            'how_to_use.*' => ['required', 'string', 'max:191'],
+            'how_to_use' => ['nullable', 'string'],
             'access_delivery' => ['array'],
             'access_delivery.*' => ['required', 'string', 'max:191']
         ]);
@@ -112,7 +109,6 @@ class ProductsController extends Controller
         $data['price'] = json_encode($data['price']);
         $data['benefits'] = json_encode($data['benefits'] ?? []);
         $data['target_users'] = json_encode($data['target_users'] ?? []);
-        $data['how_to_use'] = json_encode($data['how_to_use'] ?? []);
         $data['access_delivery'] = json_encode($data['access_delivery'] ?? []);
         $product->update($data);
 
