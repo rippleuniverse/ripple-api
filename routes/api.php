@@ -44,6 +44,28 @@ namespace('App\Http\Controllers')->group(function () {
         Route::get('{program}/reviews', 'Program\ProgramsController@reviews');
     });
 
+    Route::prefix('products')->group(function () {
+        Route::get('', 'Product\ProductsController@viewAll');
+        Route::get('overview', 'Product\ProductsController@overview');
+        Route::get('categories', 'Product\ProductsController@viewCategories');
+        Route::get('categories/all', 'Product\ProductsController@viewAllCategories');
+        Route::get('categories/{category}', 'Product\ProductsController@viewCategory');
+        Route::get('{product}', 'Product\ProductsController@view');
+
+        Route::middleware([
+            'auth:sanctum',
+            VerifiedMiddleware::class,
+            RoleAuthorizeMiddleware::class . ':admin'
+        ])->group(function () {
+            Route::post('', 'Product\ProductsController@store');
+            Route::post('categories', 'Product\ProductsController@storeCategory');
+            Route::patch('categories/{category}', 'Product\ProductsController@updateCategory');
+            Route::delete('categories/{category}', 'Product\ProductsController@destroyCategory');
+            Route::post('{product}', 'Product\ProductsController@update');
+            Route::delete('{product}', 'Product\ProductsController@destroy');
+        });
+    });
+
     Route::prefix('events')->group(function () {
         Route::get('', 'Event\EventsController@viewAll');
         Route::get('categories', 'Event\EventsController@viewCategories');
@@ -76,6 +98,22 @@ namespace('App\Http\Controllers')->group(function () {
 
         Route::get('', 'OpenRoles\OpenRolesController@viewAll');
         Route::get('{role}', 'OpenRoles\OpenRolesController@view');
+    });
+
+    Route::prefix('podcasts')->group(function () {
+        Route::get('', 'Podcast\PodcastsController@viewAll');
+        Route::get('categories', 'Podcast\PodcastsController@viewCategories');
+        Route::get('{podcast}', 'Podcast\PodcastsController@view');
+        Route::get('{podcast}/related', 'Podcast\PodcastsController@viewRelatedPodcasts');
+        Route::middleware([
+            'auth:sanctum',
+            VerifiedMiddleware::class,
+            RoleAuthorizeMiddleware::class . ':admin'
+        ])->group(function () {
+            Route::post('', 'Podcast\PodcastsController@store');
+            Route::post('{podcast}', 'Podcast\PodcastsController@update');
+            Route::delete('{podcast}', 'Podcast\PodcastsController@destroy');
+        });
     });
 
     Route::prefix('job-applications')->group(function () {

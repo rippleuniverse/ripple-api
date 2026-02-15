@@ -58,3 +58,4 @@ jobs:
             composer install
             composer dump-autoload
             php artisan migrate --force
+            php artisan db:seed --force

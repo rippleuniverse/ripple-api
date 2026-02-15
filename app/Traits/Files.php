@@ -16,7 +16,7 @@ trait Files
 
         foreach ($documentFiles as $file) {
             $path = $file->store($folder, $storage);
-            array_push($documents, $path);
+            $documents[] = $path;
         }
 
         return $documents;
@@ -24,8 +24,7 @@ trait Files
 
     public function uploadFile($file, $folder, $storage = 'public')
     {
-        $path = $file->store($folder, $storage);
-        return $path;
+        return $file->store($folder, $storage);
     }
 
     public function getFilePath($path): ?string
@@ -33,9 +32,7 @@ trait Files
         if (!$path) {
             return null;
         }
-        $filePath = asset('storage/' . $path);
-
-        return $filePath;
+        return asset('storage/' . $path);
     }
 
     public function getFilePaths($paths): ?array
