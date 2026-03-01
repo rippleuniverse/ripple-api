@@ -20,6 +20,7 @@ class Product extends Model
         'target_users',
         'how_to_use',
         'access_delivery',
+        'available_quantity'
     ];
 
     public function scopeFilter(Builder $builder)

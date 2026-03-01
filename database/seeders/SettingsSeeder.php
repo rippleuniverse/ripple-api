@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Settings;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\ShippingFee;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -16,6 +16,18 @@ class SettingsSeeder extends Seeder
     {
         Settings::factory()->create([
             'site_unlock_password' => Hash::make('Ripple!!Secure374mnb'),
+        ]);
+        ShippingFee::create([
+            'fees' => json_encode([
+                [
+                    'currency' => 'USD',
+                    'amount' => 2
+                ],
+                [
+                    'currency' => 'NGN',
+                    'amount' => 1500
+                ],
+            ])
         ]);
     }
 }

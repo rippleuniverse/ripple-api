@@ -34,5 +34,14 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'stripe' => [
+        'secret_key' => env('STRIPE_SECRET_KEY'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+    ],
+    'paystack' => [
+        'url' => env('PAYSTACK_API_URL'),
+        'secret_key' => env('PAYSTACK_SECRET_KEY'),
+        'callback_url' => env('PAYSTACK_CALLBACK_URL'),
+    ]
 
 ];

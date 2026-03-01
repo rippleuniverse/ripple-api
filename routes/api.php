@@ -97,6 +97,7 @@ namespace('App\Http\Controllers')->group(function () {
         });
 
         Route::get('', 'OpenRoles\OpenRolesController@viewAll');
+        Route::get('overview', 'OpenRoles\OpenRolesController@overview');
         Route::get('{role}', 'OpenRoles\OpenRolesController@view');
     });
 
@@ -129,9 +130,53 @@ namespace('App\Http\Controllers')->group(function () {
         });
     });
 
+    Route::prefix('blogs')->group(function () {
+        Route::middleware([
+            'auth:sanctum',
+            VerifiedMiddleware::class,
+            RoleAuthorizeMiddleware::class . ':admin'
+        ])->group(function () {
+            Route::post('assets', 'Blog\BlogsController@uploadAsset');
+            Route::get('assets', 'Blog\BlogsController@listAssets');
+        });
+    });
+
+    Route::prefix('checkout')->group(function () {
+        Route::middleware(['auth:sanctum',
+            VerifiedMiddleware::class,
+        ])->group(function () {
+            Route::post('shop', 'Invoices\CheckoutController@shopCheckout');
+        });
+    });
+
+    Route::prefix('invoice')->group(function () {
+        Route::middleware(['auth:sanctum',
+            VerifiedMiddleware::class,
+        ])->group(function () {
+            Route::get('purchases', 'Invoices\InvoicesController@purchases');
+            Route::get('purchases/{item}', 'Invoices\InvoicesController@purchase');
+        });
+    });
+
+    Route::prefix('billing-info')->group(function () {
+        Route::middleware(['auth:sanctum',
+            VerifiedMiddleware::class,
+        ])->group(function () {
+            Route::put('', 'Invoices\BillingInformationController@save');
+            Route::get('', 'Invoices\BillingInformationController@view');
+            Route::delete('', 'Invoices\BillingInformationController@destroy');
+        });
+    });
+
     Route::prefix('settings')->group(function () {
         Route::post('site-login', 'Settings\SettingsController@siteLogin');
+        Route::get('shipping-fees', 'Settings\SettingsController@shippingFee');
         Route::get('check-site-lock-status', 'Settings\SettingsController@checkSiteLockStatus');
+    });
+
+    Route::prefix('webhook')->group(function () {
+        Route::post('stripe', 'Webhook\WebhookController@stripe');
+        Route::post('paystack', 'Webhook\WebhookController@paystack');
     });
 
 });

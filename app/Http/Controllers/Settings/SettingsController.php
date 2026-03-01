@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Settings;
 use App\Enums\Enums\StatusCode;
 use App\Http\Controllers\Controller;
 use App\Models\Settings;
+use App\Models\ShippingFee;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Illuminate\Http\Request;
@@ -51,6 +52,14 @@ class SettingsController extends Controller
             return $this->failed(['is_unlocked' => false], StatusCode::Unauthorized->value, 'Site is locked');
         }
 
+    }
+
+    public function shippingFee()
+    {
+        $fees = ShippingFee::first();
+        return $this->success([
+            'fees' => json_decode($fees->fees, true)
+        ]);
     }
 
 }

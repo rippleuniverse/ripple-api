@@ -20,6 +20,7 @@ class ProfileResource extends JsonResource
             'role' => $this->role,
             'avatar' => $this->getFilePath($this->avatar),
             'email_verified_at' => $this->email_verified_at,
+            'created_at' => $this->created_at->format('M Y'),
         ];
     }
 }
