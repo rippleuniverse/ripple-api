@@ -11,9 +11,10 @@ class EventTicket extends Model
         'event_id',
         'name',
         'price',
-        'features'
+        'features',
+        'status'
     ];
-    
+
 
     public function event(): BelongsTo
     {

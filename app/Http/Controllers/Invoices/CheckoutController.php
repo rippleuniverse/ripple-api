@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Invoices;
 use App\Enums\Enums\StatusCode;
 use App\Http\Controllers\Controller;
 use App\Mail\InvoiceMail;
+use App\Models\EventTicket;
 use App\Models\Invoice;
 use App\Models\Product;
 use App\Models\ShippingFee;
@@ -20,13 +21,11 @@ class CheckoutController extends Controller
 {
     use Stripe;
 
-    public function shopCheckout(Request $request)
+
+    public function eventCheckout(Request $request)
     {
         $data = $request->validate([
             'currency' => ['required', 'in:USD,NGN'],
-            'items' => ['required', 'min:1', 'array'],
-            'items.*.product_id' => ['required', 'string', 'exists:products,id'],
-            'items.*.quantity' => ['required', 'numeric', 'min:1'],
             'save_billing_information' => ['required', 'boolean'],
             'billing_information' => ['required', 'array'],
             'billing_information.first_name' => ['required', 'string', 'max:191'],
@@ -36,6 +35,88 @@ class CheckoutController extends Controller
             'billing_information.city' => ['required', 'string', 'max:191'],
             'billing_information.country' => ['required', 'string', 'max:191'],
             'billing_information.phone' => ['required', 'string', 'max:191'],
+            'tickets' => ['required', 'array', 'min:1'],
+            'tickets.*.id' => ['required', 'string', 'exists:event_tickets,id'],
+            'tickets.*.quantity' => ['numeric', 'min:1'],
+        ]);
+
+        $ticketIds = array_column($data['tickets'], 'id');
+        $user = $request->user();
+        try {
+            DB::beginTransaction();
+
+            $hasUnavailable = $this->hasUnavailableTickets($ticketIds);
+            if ($hasUnavailable) {
+                return $this->failed(null, StatusCode::BadRequest->value, 'Ticket is unavailable');
+            }
+
+            $invoiceItems = [];
+            $amount = 0;
+
+
+            if ($data['save_billing_information']) {
+                $this->saveBillingInformation($user, $data['billing_information']);
+            }
+
+            foreach ($data['tickets'] as $item) {
+                $ticket = EventTicket::find($item['id']);
+                $price = collect(sanitizedJsonDecode($ticket->price));
+                $amountVal = (float)$price->where('currency', $data['currency'])->first()->amount;
+                $amount += $amountVal * $item['quantity'];
+
+                $invoiceItems[] = [
+                    'product_id' => $item['id'],
+                    'quantity' => $item['quantity'],
+                    'unit_price' => $amountVal,
+                    'product_type' => 'event',
+                    'currency' => $data['currency'],
+                ];
+            }
+
+            $totalAmount = $amount;
+            $trxId = Str::uuid();
+
+            $invoice = Invoice::create([
+                'amount' => $totalAmount,
+                'status' => 'pending',
+                'shipping_fee' => 0,
+                'user_id' => $user->id,
+                'currency' => $data['currency'],
+                'billing_information' => json_encode($data['billing_information']),
+                'trx_id' => $trxId,
+            ]);
+
+            $invoice->items()->createMany($invoiceItems);
+            $paymentUrl = $this->generatePaymentLink($invoice);
+            DB::commit();
+
+            Mail::to($user->email)->send(new InvoiceMail($invoice));
+
+            return $this->success(['payment_url' => $paymentUrl], 'Invoice created successfully.');
+
+        } catch (\Exception|\Throwable $e) {
+            DB::rollBack();
+            return $this->failed(null, StatusCode::InternalServerError->value, $e->getMessage());
+        }
+
+    }
+
+    public function shopCheckout(Request $request)
+    {
+        $data = $request->validate([
+            'currency' => ['required', 'in:USD,NGN'],
+            'save_billing_information' => ['required', 'boolean'],
+            'billing_information' => ['required', 'array'],
+            'billing_information.first_name' => ['required', 'string', 'max:191'],
+            'billing_information.last_name' => ['required', 'string', 'max:191'],
+            'billing_information.email' => ['required', 'email', 'max:191'],
+            'billing_information.apartment' => ['required', 'string', 'max:191'],
+            'billing_information.city' => ['required', 'string', 'max:191'],
+            'billing_information.country' => ['required', 'string', 'max:191'],
+            'billing_information.phone' => ['required', 'string', 'max:191'],
+            'items' => ['required', 'min:1', 'array'],
+            'items.*.product_id' => ['required', 'string', 'exists:products,id'],
+            'items.*.quantity' => ['required', 'numeric', 'min:1'],
         ]);
         $productIds = array_column($data['items'], 'product_id');
 
@@ -94,9 +175,16 @@ class CheckoutController extends Controller
         }
     }
 
+
     private function hasUnavailableProduct(array $products): bool
     {
         return Product::whereIn('id', $products)->where('available_quantity', '<', 1)->exists();
+    }
+
+
+    private function hasUnavailableTickets(array $tickets): bool
+    {
+        return EventTicket::whereIn('id', $tickets)->where('status', 'unavailable')->exists();
     }
 
 

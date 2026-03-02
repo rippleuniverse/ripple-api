@@ -146,6 +146,7 @@ namespace('App\Http\Controllers')->group(function () {
             VerifiedMiddleware::class,
         ])->group(function () {
             Route::post('shop', 'Invoices\CheckoutController@shopCheckout');
+            Route::post('event', 'Invoices\CheckoutController@eventCheckout');
         });
     });
 

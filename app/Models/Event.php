@@ -22,6 +22,7 @@ class Event extends Model
         'agendas',
         'images',
         'event_category_id',
+        'status'
     ];
 
     public function scopeBuilder(Builder $builder): void
@@ -33,6 +34,9 @@ class Event extends Model
 
         $builder->when(request('type'), function ($query, $type) {
             $query->where('type', $type);
+        });
+        $builder->when(request('status'), function ($query, $status) {
+            $query->where('status', $status);
         });
         $builder->when(request('access'), function ($query, $access) {
             $query->where('access', $access);

@@ -101,6 +101,10 @@ class WebhookController extends Controller
                 return response()->json(['message' => 'Invalid amount'], 400);
             }
 
+            if ($invoice->status === 'paid') {
+                return response(null, StatusCode::Success->value);
+            }
+
             $invoice->update([
                 'status' => 'paid',
             ]);
@@ -109,6 +113,8 @@ class WebhookController extends Controller
                 if ($item->product_type === 'shop') {
                     $product = Product::find($item->product_id);
                     $product->decrement('available_quantity', $item->quantity);
+                }
+                if ($item->product_type === 'event') {
                 }
             });
 
