@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Enums\Enums\StatusCode;
+use App\Enums\StatusCode;
 use App\Traits\HttpResponses;
 use Closure;
 use Illuminate\Http\Request;

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Settings;
 
-use App\Enums\Enums\StatusCode;
+use App\Enums\StatusCode;
 use App\Http\Controllers\Controller;
 use App\Models\Settings;
 use App\Models\ShippingFee;

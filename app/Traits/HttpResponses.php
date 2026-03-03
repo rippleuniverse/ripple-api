@@ -2,7 +2,7 @@
 
 namespace App\Traits;
 
-use App\Enums\Enums\StatusCode;
+use App\Enums\StatusCode;
 use Illuminate\Http\JsonResponse;
 
 trait HttpResponses

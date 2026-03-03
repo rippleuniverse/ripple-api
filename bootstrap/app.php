@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\Enums\StatusCode;
+use App\Enums\StatusCode;
 use Fruitcake\Cors\Exceptions\InvalidOptionException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;

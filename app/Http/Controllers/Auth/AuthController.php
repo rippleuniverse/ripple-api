@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Enums\Enums\StatusCode;
+use App\Enums\StatusCode;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Auth\ProfileResource;
 use App\Mail\Auth\WelcomeMail;

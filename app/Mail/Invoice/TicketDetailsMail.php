@@ -5,7 +5,6 @@ namespace App\Mail\Invoice;
 use App\Models\EventTicket;
 use App\Models\InvoiceItem;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Attachment;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -20,7 +19,7 @@ class TicketDetailsMail extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct(public InvoiceItem $item, public EventTicket $ticket, public string $pdfUrl)
+    public function __construct(public InvoiceItem $item, public EventTicket $ticket, public string $pdfPath)
     {
         //
     }
@@ -54,7 +53,8 @@ class TicketDetailsMail extends Mailable
     {
         $name = $this->item->product_name . '-' . Str::random(10) . '.pdf';
         return [
-            Attachment::fromUrl($this->pdfUrl)->as($name)->withMime('application/pdf'),
+            Attachment::fromPath($this->pdfPath)
+                ->as($name)->withMime('application/pdf'),
         ];
     }
 }

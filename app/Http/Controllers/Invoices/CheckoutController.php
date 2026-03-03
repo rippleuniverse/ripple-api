@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Invoices;
 
-use App\Enums\Enums\StatusCode;
+use App\Enums\StatusCode;
 use App\Http\Controllers\Controller;
 use App\Mail\InvoiceMail;
 use App\Models\EventTicket;

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\OpenRoles;
 
-use App\Enums\Enums\StatusCode;
+use App\Enums\StatusCode;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\OpenRole\ApplicationResource;
 use App\Mail\OpenRoles\ApplicationMail;

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Health;
 
-use App\Enums\Enums\StatusCode;
+use App\Enums\StatusCode;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
