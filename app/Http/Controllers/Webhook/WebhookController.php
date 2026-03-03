@@ -4,11 +4,17 @@ namespace App\Http\Controllers\Webhook;
 
 use App\Enums\Enums\StatusCode;
 use App\Http\Controllers\Controller;
+use App\Mail\Invoice\TicketDetailsMail;
 use App\Mail\InvoiceMail;
+use App\Models\EventTicket;
 use App\Models\Invoice;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Mail;
+use Str;
 
 class WebhookController extends Controller
 {
@@ -33,12 +39,12 @@ class WebhookController extends Controller
         $data = $request->data;
         $reference = $data['reference'];
         $invoice = Invoice::where('trx_id', $reference)->first();
-        $amount = (float)$data['amount'];
+        $amount = (float) $data['amount'];
 
         if (!$invoice) {
             return response()->json(['message' => 'Invoice not found'], 404);
         }
-        $invoiceAmount = (float)$invoice->amount * 100;
+        $invoiceAmount = (float) $invoice->amount * 100;
 
         if ($invoiceAmount !== $amount) {
             return response()->json(['message' => 'Invalid amount'], 400);
@@ -73,7 +79,9 @@ class WebhookController extends Controller
 
             try {
                 $event = \Stripe\Webhook::constructEvent(
-                    $payload, $sig_header, config('services.stripe.webhook_secret')
+                    $payload,
+                    $sig_header,
+                    config('services.stripe.webhook_secret')
                 );
             } catch (\UnexpectedValueException $e) {
                 return response()->json(['message' => 'Invalid payload'], 400);
@@ -89,13 +97,13 @@ class WebhookController extends Controller
             $reference = $data['metadata']['reference'];
 
             $invoice = Invoice::where('trx_id', $reference)->first();
-            $amount = (float)($data['amount_total'] / 100);
+            $amount = (float) ($data['amount_total'] / 100);
 
 
             if (!$invoice) {
                 return response()->json(['message' => 'Invoice not found'], 404);
             }
-            $invoiceAmount = (float)$invoice->amount;
+            $invoiceAmount = (float) $invoice->amount;
 
             if ($invoiceAmount !== $amount) {
                 return response()->json(['message' => 'Invalid amount'], 400);
@@ -115,6 +123,34 @@ class WebhookController extends Controller
                     $product->decrement('available_quantity', $item->quantity);
                 }
                 if ($item->product_type === 'event') {
+                    $ticket = EventTicket::find($item->product_id);
+                    $qrCodeData = json_encode([
+                        'id' => $ticket->id,
+                        'event_id' => $ticket->event_id,
+                        'quantity' => $ticket->quantity,
+                        'unit_price' => $item->unit_price
+                    ]);
+                    $qrCode = QrCode::format('png')
+                        ->size(150)
+                        ->generate($qrCodeData);
+                    $ticketPath = 'tickets/' . Str::uuid()->toString() . '.png';
+                    Storage::disk('public')->put($ticketPath, $qrCode);
+                    $qrCodeUrl = config('app.url') . '/storage/' . $ticketPath;
+                    $data = [
+                        'item' => $item,
+                        'ticket' => $ticket,
+                        'qr_code' => 'data:image/png;base64,' . base64_encode($qrCode),
+                        'qr_code_url' => $qrCodeUrl
+                    ];
+                    $pdfPath = 'tickets/' . Str::uuid()->toString() . '.pdf';
+                    Pdf::loadView('pdf.ticket', $data)->save(
+                        storage_path('app/public/' . $pdfPath)
+                    );
+
+                    // $pdfUrl = asset('storage/' . $pdfPath);
+                    $pdfUrl = config('app.url') . '/storage/' . $pdfPath;
+                    Mail::to($item->invoice->user->email)->send(new TicketDetailsMail($item, $ticket, $pdfUrl));
+
                 }
             });
 
