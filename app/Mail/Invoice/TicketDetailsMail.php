@@ -2,15 +2,12 @@
 
 namespace App\Mail\Invoice;
 
-use App\Models\EventTicket;
-use App\Models\InvoiceItem;
+use App\Models\PurchasedTicket;
 use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Attachment;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use Str;
 
 class TicketDetailsMail extends Mailable
 {
@@ -19,7 +16,7 @@ class TicketDetailsMail extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct(public InvoiceItem $item, public EventTicket $ticket, public string $pdfPath)
+    public function __construct(public PurchasedTicket $ticket)
     {
         //
     }
@@ -30,7 +27,7 @@ class TicketDetailsMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Ticket Details Mail',
+            subject: "Ticket details for {$this->ticket->ticket->event->name} ({$this->ticket->ticket->name})",
         );
     }
 
@@ -51,10 +48,8 @@ class TicketDetailsMail extends Mailable
      */
     public function attachments(): array
     {
-        $name = $this->item->product_name . '-' . Str::random(10) . '.pdf';
         return [
-            Attachment::fromPath($this->pdfPath)
-                ->as($name)->withMime('application/pdf'),
+
         ];
     }
 }
