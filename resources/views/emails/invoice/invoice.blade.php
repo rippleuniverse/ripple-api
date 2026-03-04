@@ -9,6 +9,7 @@
     <h3>Payment Details:</h3>
     <ul>
         <li><b>Amount:</b> {{currencyFormat($invoice->amount, $invoice->currency)}}</li>
+        <li><b>Discount:</b> {{currencyFormat($invoice->discount, $invoice->currency)}}</li>
         <li><b>Shipping fee:</b> {{currencyFormat($invoice->shipping_fee, $invoice->currency)}}</li>
         <li><b>Payment method: </b>{{$invoice->payment_method}}</li>
         <li><b>Payment status: </b>{{$invoice->status}}</li>

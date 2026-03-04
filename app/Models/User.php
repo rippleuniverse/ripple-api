@@ -63,6 +63,11 @@ class User extends Authenticatable
         return $this->hasMany(Invoice::class, 'user_id');
     }
 
+    public function coupon(): HasOne
+    {
+        return $this->hasOne(Coupon::class, 'user_id');
+    }
+
     public function billingInformation(): HasOne
     {
         return $this->hasOne(BillingInformation::class, 'user_id');

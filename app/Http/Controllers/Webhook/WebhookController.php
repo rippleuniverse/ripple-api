@@ -49,6 +49,7 @@ class WebhookController extends Controller
         $invoice->update([
             'status' => 'paid',
         ]);
+        $this->updateUserCoupon($invoice);
 
         $this->sendInvoice($invoice);
 
@@ -104,6 +105,7 @@ class WebhookController extends Controller
             $invoice->update([
                 'status' => 'paid',
             ]);
+            $this->updateUserCoupon($invoice);
 
             $this->sendInvoice($invoice);
 
@@ -112,6 +114,17 @@ class WebhookController extends Controller
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 400);
         }
+    }
+
+
+//    Update single-use coupon for users
+    private function updateUserCoupon(Invoice $invoice)
+    {
+        if (!$invoice->coupon || $invoice->coupon?->user_id !== $invoice->user_id) return;
+
+        $invoice->coupon->update([
+            'is_active' => false
+        ]);
     }
 
     private function sendInvoice(Invoice $invoice)

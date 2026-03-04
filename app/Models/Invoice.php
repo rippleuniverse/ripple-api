@@ -18,7 +18,9 @@ class Invoice extends Model
         'shipping_fee',
         'currency',
         'payment_method',
-        'metadata'
+        'metadata',
+        'discount',
+        'coupon_id'
     ];
 
 
@@ -30,6 +32,11 @@ class Invoice extends Model
     public function items(): HasMany
     {
         return $this->hasMany(InvoiceItem::class, 'invoice_id');
+    }
+
+    public function coupon(): BelongsTo
+    {
+        return $this->belongsTo(Coupon::class, 'coupon_id');
     }
 
     public function getStatusTitleAttribute(): string
@@ -56,7 +63,7 @@ class Invoice extends Model
             return (float)$item['unit_price'] * $item['quantity'];
         }, $items);
 
-        return array_sum($totalPrices);
+        return array_sum($totalPrices) - (float)$this->discount;
     }
 
     protected function casts(): array

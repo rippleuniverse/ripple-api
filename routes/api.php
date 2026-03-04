@@ -17,6 +17,7 @@ namespace('App\Http\Controllers')->group(function () {
 
         Route::middleware('auth:sanctum')->group(function () {
             Route::get('user', 'Auth\AuthController@user');
+            Route::post('logout', 'Auth\AuthController@logout');
             Route::post('verify-email', 'Auth\AuthController@verifyEmail');
             Route::post('resend-email-verification', 'Auth\AuthController@resendEmailVerification');
         });
@@ -42,6 +43,15 @@ namespace('App\Http\Controllers')->group(function () {
         Route::get('{program}', 'Program\ProgramsController@view');
         Route::get('{program}/related', 'Program\ProgramsController@viewRelated');
         Route::get('{program}/reviews', 'Program\ProgramsController@reviews');
+    });
+
+    Route::prefix('coupons')->group(function () {
+        Route::middleware([
+            'auth:sanctum',
+            VerifiedMiddleware::class,
+        ])->group(function () {
+            Route::get('/user', 'Coupon\CouponController@userCoupon');
+        });
     });
 
     Route::prefix('products')->group(function () {

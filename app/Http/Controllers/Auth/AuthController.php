@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Auth\ProfileResource;
 use App\Mail\Auth\WelcomeMail;
 use App\Mail\Newsletter\SubscribedMail;
+use App\Models\Coupon;
 use App\Models\NewsletterSubscription;
 use App\Models\User;
 use App\Traits\OtpTrait;
@@ -32,6 +33,23 @@ class AuthController extends Controller
             'full_name' => $data['full_name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
+        ]);
+
+        $userInitials = substr($user->full_name, 0, 3);
+        $code = strtoupper($userInitials . substr(md5(uniqid()), 0, 5));
+
+        if (Coupon::where('code', $code)->exists()) {
+            $code = strtoupper($userInitials . substr(md5(uniqid()), 0, 5)) . $user->id;
+        }
+
+        Coupon::create([
+            'user_id' => $user->id,
+            'is_active' => true,
+            'code' => $code,
+            'percentage_value' => 10,
+            'fixed_value' => json_encode([]),
+            'type' => 'percentage',
+            'is_created_by_admin' => false,
         ]);
 
 
