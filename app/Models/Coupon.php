@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -23,8 +24,15 @@ class Coupon extends Model
     {
         return [
             'is_active' => 'boolean',
-            'is_admin_owned' => 'boolean',
+            'is_created_by_admin' => 'boolean',
         ];
+    }
+
+    public function scopeFilter(Builder $builder)
+    {
+        $builder->when(request('type'), function ($query, $type) {
+            $query->where('type', $type);
+        });
     }
 
     public function user(): BelongsTo

@@ -17,7 +17,8 @@ class CouponResource extends JsonResource
             'is_active' => (bool)$this->is_active,
             'type' => $this->type,
             'percentage_value' => (float)$this->percentage_value,
-            'fixed_value' => sanitizedJsonDecode($this->fixed_value)
+            'fixed_value' => $this->type === 'fixed' ? sanitizedJsonDecode($this->fixed_value) : null,
+            'created_at' => $this->created_at->format('Y-m-d'),
         ];
     }
 }

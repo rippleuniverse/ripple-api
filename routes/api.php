@@ -51,6 +51,14 @@ namespace('App\Http\Controllers')->group(function () {
             VerifiedMiddleware::class,
         ])->group(function () {
             Route::get('/user', 'Coupon\CouponController@userCoupon');
+
+            Route::middleware(RoleAuthorizeMiddleware::class . ':admin')->group(function () {
+                Route::get('/', 'Coupon\CouponController@viewAll');
+                Route::post('/', 'Coupon\CouponController@store');
+                Route::get('/{coupon}', 'Coupon\CouponController@view');
+                Route::patch('/{coupon}', 'Coupon\CouponController@update');
+                Route::delete('/{coupon}', 'Coupon\CouponController@destroy');
+            });
         });
     });
 
