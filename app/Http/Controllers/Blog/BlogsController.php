@@ -35,6 +35,22 @@ class BlogsController extends Controller
         return $this->success($data);
     }
 
+    public function viewRelatedBlogs(string $slug)
+    {
+        $blog = Blog::where('slug', $slug)
+            ->orWhere('id', $slug)
+            ->firstOrFail();
+
+        $blogs = Blog::where('blog_category_id', $blog->blog_category_id)
+            ->where('id', '!=', $blog->id)
+            ->latest()
+            ->take(4)
+            ->get();
+        $list = BlogItemResource::collection($blogs);
+
+        return $this->success($list);
+    }
+
     public function view(string $slug)
     {
         $blog = Blog::where('slug', $slug)

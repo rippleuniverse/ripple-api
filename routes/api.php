@@ -165,6 +165,7 @@ namespace('App\Http\Controllers')->group(function () {
         Route::get('', 'Blog\BlogsController@viewAll');
         Route::get('categories', 'Blog\BlogsController@viewAllCategories');
         Route::get('{slug}', 'Blog\BlogsController@view');
+        Route::get('{slug}/related', 'Blog\BlogsController@viewRelatedBlogs');
     });
 
     Route::prefix('checkout')->group(function () {
