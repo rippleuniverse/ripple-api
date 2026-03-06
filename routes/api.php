@@ -149,14 +149,22 @@ namespace('App\Http\Controllers')->group(function () {
     });
 
     Route::prefix('blogs')->group(function () {
+
         Route::middleware([
             'auth:sanctum',
             VerifiedMiddleware::class,
             RoleAuthorizeMiddleware::class . ':admin'
         ])->group(function () {
+            Route::post('', 'Blog\BlogsController@store');
+            Route::post('{blog}', 'Blog\BlogsController@update');
+            Route::delete('{blog}', 'Blog\BlogsController@destroy');
             Route::post('assets', 'Blog\BlogsController@uploadAsset');
             Route::get('assets', 'Blog\BlogsController@listAssets');
+            Route::delete('assets/{asset}', 'Blog\BlogsController@destroyAsset');
         });
+        Route::get('', 'Blog\BlogsController@viewAll');
+        Route::get('categories', 'Blog\BlogsController@viewAllCategories');
+        Route::get('{slug}', 'Blog\BlogsController@view');
     });
 
     Route::prefix('checkout')->group(function () {
