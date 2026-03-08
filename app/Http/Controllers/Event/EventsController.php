@@ -26,6 +26,13 @@ class EventsController extends Controller
         return $this->success($data);
     }
 
+    public function overview()
+    {
+        $events = Event::latest()->take(3)->get();
+        $data = EventResource::collection($events);
+        return $this->success($data);
+    }
+
     public function view(Event $event)
     {
         $data = [

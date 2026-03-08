@@ -25,6 +25,14 @@ class PodcastsController extends Controller
         return $this->success($data);
     }
 
+    public function overview()
+    {
+        $podcasts = Podcast::latest()->take(2)->get();
+        $data = PodcastResource::collection($podcasts);
+
+        return $this->success($data);
+    }
+
     public function viewCategories()
     {
         $categories = PodcastCategory::all();

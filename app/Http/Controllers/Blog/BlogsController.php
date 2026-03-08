@@ -35,6 +35,14 @@ class BlogsController extends Controller
         return $this->success($data);
     }
 
+    public function overview()
+    {
+        $blogs = Blog::latest()->take(2)->get();
+        $data = BlogItemResource::collection($blogs);
+
+        return $this->success($data);
+    }
+
     public function viewRelatedBlogs(string $slug)
     {
         $blog = Blog::where('slug', $slug)

@@ -91,6 +91,7 @@ namespace('App\Http\Controllers')->group(function () {
     Route::prefix('events')->group(function () {
         Route::get('', 'Event\EventsController@viewAll');
         Route::get('categories', 'Event\EventsController@viewCategories');
+        Route::get('overview', 'Event\EventsController@overview');
         Route::get('{event}', 'Event\EventsController@view');
 
         Route::middleware([
@@ -126,6 +127,7 @@ namespace('App\Http\Controllers')->group(function () {
     Route::prefix('podcasts')->group(function () {
         Route::get('', 'Podcast\PodcastsController@viewAll');
         Route::get('categories', 'Podcast\PodcastsController@viewCategories');
+        Route::get('overview', 'Podcast\PodcastsController@overview');
         Route::get('{podcast}', 'Podcast\PodcastsController@view');
         Route::get('{podcast}/related', 'Podcast\PodcastsController@viewRelatedPodcasts');
         Route::middleware([
@@ -168,6 +170,7 @@ namespace('App\Http\Controllers')->group(function () {
         });
         Route::get('', 'Blog\BlogsController@viewAll');
         Route::get('categories', 'Blog\BlogsController@viewAllCategories');
+        Route::get('overview', 'Blog\BlogsController@overview');
         Route::get('{slug}', 'Blog\BlogsController@view');
         Route::get('{slug}/related', 'Blog\BlogsController@viewRelatedBlogs');
     });
