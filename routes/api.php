@@ -20,6 +20,10 @@ namespace('App\Http\Controllers')->group(function () {
             Route::post('logout', 'Auth\AuthController@logout');
             Route::post('verify-email', 'Auth\AuthController@verifyEmail');
             Route::post('resend-email-verification', 'Auth\AuthController@resendEmailVerification');
+            Route::middleware(VerifiedMiddleware::class)->group(function () {
+                Route::post('update-profile', 'Auth\AuthController@updateProfile');
+                Route::delete('remove-avatar', 'Auth\AuthController@removeAvatar');
+            });
         });
     });
 

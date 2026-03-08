@@ -10,6 +10,7 @@ use App\Mail\Newsletter\SubscribedMail;
 use App\Models\Coupon;
 use App\Models\NewsletterSubscription;
 use App\Models\User;
+use App\Traits\Files;
 use App\Traits\OtpTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -18,7 +19,7 @@ use Illuminate\Support\Facades\Mail;
 class AuthController extends Controller
 {
 
-    use OtpTrait;
+    use OtpTrait, Files;
 
     public function signUp(Request $request)
     {
@@ -97,6 +98,43 @@ class AuthController extends Controller
         $user = $request->user();
         $profile = new ProfileResource($user);
         return $this->success($profile, 'User profile');
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        $data = $request->validate([
+            'full_name' => ['string', 'required', 'max:255'],
+            'email' => ['string', 'required', 'email', 'unique:users,email,' . $user->id],
+            'avatar' => ['nullable', 'mimes:jpg,jpeg,png', 'max:5120']
+        ]);
+
+        $avatar = $request->file('avatar') ? $this->uploadFile($request->file('avatar'), 'users') : $user->avatar;
+        $data['avatar'] = $avatar;
+        $isNewEmail = $user->email !== $data['email'];
+
+        if ($isNewEmail) {
+            $this->generateSendOtp($user, 'email_verification');
+        }
+
+        $user->update([
+            ...$data,
+            'email_verified_at' => $isNewEmail ? null : $user->email_verified_at,
+        ]);
+        $profile = new ProfileResource($user);
+        return $this->success($profile, 'Profile updated successfully.');
+    }
+
+    public function removeAvatar(Request $request)
+    {
+        $user = $request->user();
+        if (!$user->avatar) {
+            return $this->success(null, 'No avatar to remove.');
+        }
+        $this->deleteFile($user->avatar);
+        $user->update(['avatar' => null]);
+        return $this->success(null, 'Avatar removed successfully.');
     }
 
     public function resendEmailVerification(Request $request)
