@@ -15,20 +15,24 @@
         <li><b>Payment status: </b>{{$invoice->status}}</li>
     </ul>
 
-    <h3>Billing Details:</h3>
-    <ul>
-        @php
-            $info = sanitizedJsonDecode($invoice->billing_information, true);
-        @endphp
 
-        <li><b>First name:</b> {{$info['first_name']}}</li>
-        <li><b>Last name:</b> {{$info['last_name']}}</li>
-        <li><b>Email address:</b> {{$info['email']}}</li>
-        <li><b>Phone:</b> {{$info['phone']}}</li>
-        <li><b>Apartment:</b> {{$info['apartment']}}</li>
-        <li><b>Phone:</b> {{$info['city']}}</li>
-        <li><b>Country:</b> {{$info['country']}}</li>
-    </ul>
+    @if($invoice->billing_information)
+        <h3>Billing Details:</h3>
+        <ul>
+            @php
+                $info = sanitizedJsonDecode($invoice->billing_information, true);
+            @endphp
+
+            <li><b>First name:</b> {{$info['first_name']}}</li>
+            <li><b>Last name:</b> {{$info['last_name']}}</li>
+            <li><b>Email address:</b> {{$info['email']}}</li>
+            <li><b>Phone:</b> {{$info['phone']}}</li>
+            <li><b>Apartment:</b> {{$info['apartment']}}</li>
+            <li><b>Phone:</b> {{$info['city']}}</li>
+            <li><b>Country:</b> {{$info['country']}}</li>
+        </ul>
+    @endif
+
 
 
     <h3>Product Details:</h3>

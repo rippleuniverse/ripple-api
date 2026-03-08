@@ -25,7 +25,7 @@ class ProgramResource extends JsonResource
                 'name' => $this->category->name,
                 'slug' => $this->category->slug,
             ],
-            'price' => currencyFormat($this->price),
+            'price' => sanitizedJsonDecode($this->price, true),
             'rating' => [
                 'avg_rating' => (int)$this->ratings()->avg('rating'),
                 'count' => $this->ratings()->count()

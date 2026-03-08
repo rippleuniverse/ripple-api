@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Program;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Program\CategoryResource;
-use App\Http\Resources\Program\ModuleResource;
 use App\Http\Resources\Program\ProgramResource;
 use App\Http\Resources\Program\RatingResource;
 use App\Models\Program;
@@ -42,15 +41,13 @@ class ProgramsController extends Controller
                 'name' => $program->category->name,
                 'slug' => $program->category->slug,
             ],
-            'formatted_price' => currencyFormat($program->price),
-            'price' => (float)$program->price,
+            'price' => sanitizedJsonDecode($program->price, true),
             'rating' => [
                 'avg_rating' => $program->ratings()->avg('rating') ?? 0,
                 'count' => $program->ratings()->count()
             ],
             'featured_image' => $this->getFilePath($program->featured_image),
             'created_at' => $program->created_at->format('Y-m-d'),
-            'modules' => ModuleResource::collection($program->modules),
         ];
 
         return $this->success($data);
@@ -72,28 +69,30 @@ class ProgramsController extends Controller
                 'name' => ['required', 'string', 'max:255'],
                 'author' => ['required', 'string', 'max:255'],
                 'experience_level' => ['required', 'string', 'in:beginner,intermediate,expert'],
-                'price' => ['required', 'numeric', 'min:0'],
                 'skills' => ['required', 'array', 'min:1'],
                 'description' => ['required', 'string'],
                 'skills.*' => ['required', 'string', 'max:255'],
                 //                Max of 5mb
                 'featured_image' => ['required', 'mimes:png,jpeg,jpg', 'max:5120'],
-                'modules' => ['required', 'array', 'min:1'],
-                'modules.*.module_no' => ['required', 'numeric'],
-                'modules.*.title' => ['required', 'string', 'max:255'],
-                'modules.*.description' => ['required', 'nullable', 'string'],
+                'file' => ['required', 'mimes:pdf,docx,doc,zip,rar'],
+                'price' => ['array', 'min:2', 'max:2'],
+                'price.0.currency' => ['required', 'string', 'in:NGN'],
+                'price.0.amount' => ['required', 'numeric:', 'min:0'],
+                'price.1.currency' => ['required', 'string', 'in:USD'],
+                'price.1.amount' => ['required', 'numeric:', 'min:0'],
             ]
         );
 
         $featuredImage = $this->uploadFile($request->file('featured_image'), 'programs');
         $data['featured_image'] = $featuredImage;
         $data['skills'] = implode(',', $data['skills']);
-        $program = Program::create([
+        $data['file'] = $this->uploadFile($request->file('file'), 'programs', 'private');
+        $data['price'] = json_encode($data['price']);
+        Program::create([
             'program_category_id' => $data['category_id'],
             ...$data
         ]);
 
-        $program->modules()->createMany($data['modules']);
 
         return $this->success(null, 'Program created successfully.');
 
@@ -127,32 +126,27 @@ class ProgramsController extends Controller
                 'name' => ['required', 'string', 'max:255'],
                 'author' => ['required', 'string', 'max:255'],
                 'experience_level' => ['required', 'string', 'in:beginner,intermediate,expert'],
-                'price' => ['required', 'numeric', 'min:0'],
                 'skills' => ['required', 'array', 'min:1'],
                 'skills.*' => ['required', 'string', 'max:255'],
                 'description' => ['required', 'string'],
                 //                Max of 5mb
                 'featured_image' => ['nullable', 'mimes:png,jpeg,jpg', 'max:5120'],
-                'modules' => ['required', 'array', 'min:1'],
-                'modules.*.module_no' => ['required', 'numeric'],
-                'modules.*.id' => ['nullable', 'string'],
-                'modules.*.title' => ['required', 'string', 'max:255'],
-                'modules.*.description' => ['required', 'nullable', 'string'],
+                'file' => ['nullable', 'mimes:pdf,docx,doc,zip,rar'],
+                'price' => ['array', 'min:2', 'max:2'],
+                'price.0.currency' => ['required', 'string', 'in:NGN'],
+                'price.0.amount' => ['required', 'numeric:', 'min:0'],
+                'price.1.currency' => ['required', 'string', 'in:USD'],
+                'price.1.amount' => ['required', 'numeric:', 'min:0'],
             ]
         );
 
         $featuredImage = $request->file('featured_image') ? $this->uploadFile($request->file('featured_image'), 'programs') : $program->featured_image;
         $data['featured_image'] = $featuredImage;
         $data['skills'] = implode(',', $data['skills']);
+        $data['file'] = $request->file('file') ?
+            $this->uploadFile($request->file('file'), 'programs', 'private') : $program->file;
+        $data['price'] = json_encode($data['price']);
         $program->update($data);
-
-        $modules = $data['modules'];
-        foreach ($modules as $module) {
-            $program->modules()->updateOrCreate(['id' => $module['id']], [
-                'title' => $module['title'],
-                'description' => $module['description']
-            ]);
-        }
 
         return $this->success(null, 'Program updated successfully.');
     }

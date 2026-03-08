@@ -174,6 +174,7 @@ namespace('App\Http\Controllers')->group(function () {
         ])->group(function () {
             Route::post('shop', 'Invoices\CheckoutController@shopCheckout');
             Route::post('event', 'Invoices\CheckoutController@eventCheckout');
+            Route::post('program', 'Invoices\CheckoutController@programCheckout');
         });
     });
 
@@ -183,6 +184,7 @@ namespace('App\Http\Controllers')->group(function () {
         ])->group(function () {
             Route::get('purchases', 'Invoices\InvoicesController@purchases');
             Route::get('purchases/{item}', 'Invoices\InvoicesController@purchase');
+            Route::get('purchases/{item}/download-program', 'Invoices\InvoicesController@downloadProgramFile');
         });
     });
 

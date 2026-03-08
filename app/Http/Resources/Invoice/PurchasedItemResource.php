@@ -26,6 +26,7 @@ class PurchasedItemResource extends JsonResource
                 'trx_id' => $this->invoice->trx_id,
                 'payment_method' => $this->invoice->payment_method,
                 'payment_url' => $this->invoice->payment_url,
+                'metadata' => $this->invoice->metadata ? sanitizedJsonDecode($this->invoice->metadata, true) : null,
             ],
             'product_type' => $this->product_type,
             'item' => [

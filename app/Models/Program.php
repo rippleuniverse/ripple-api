@@ -19,6 +19,7 @@ class Program extends Model
         'id',
         'description',
         'skills',
+        'file'
     ];
 
     public function scopeFilter(Builder $builder): void
@@ -37,11 +38,6 @@ class Program extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(ProgramCategory::class, 'program_category_id');
-    }
-
-    public function modules(): HasMany
-    {
-        return $this->hasMany(Module::class);
     }
 
     public function ratings(): HasMany

@@ -9,6 +9,7 @@ use App\Models\Coupon;
 use App\Models\EventTicket;
 use App\Models\Invoice;
 use App\Models\Product;
+use App\Models\Program;
 use App\Models\ShippingFee;
 use App\Models\User;
 use App\Traits\Stripe;
@@ -21,6 +22,72 @@ use Illuminate\Support\Str;
 class CheckoutController extends Controller
 {
     use Stripe;
+
+    public function programCheckout(Request $request)
+    {
+        $data = $request->validate([
+            'currency' => ['required', 'in:USD,NGN'],
+            'coupon_code' => ['nullable', 'string', 'exists:coupons,code'],
+            'program_id' => ['required', 'exists:programs,id'],
+        ]);
+        $user = $request->user();
+
+        try {
+            DB::beginTransaction();
+
+            $invoiceItems = [];
+            $amount = 0;
+            $program = Program::find($data['program_id']);
+            $price = collect(sanitizedJsonDecode($program->price));
+            $amountVal = (float)$price->where('currency', $data['currency'])->first()->amount;
+            $amount += $amountVal;
+
+            $invoiceItems[] = [
+                'product_id' => $program->id,
+                'quantity' => 1,
+                'unit_price' => $amountVal,
+                'product_type' => 'program',
+                'currency' => $data['currency'],
+            ];
+
+
+            $totalAmount = $amount;
+            $trxId = Str::uuid();
+            $coupon = $this->getCoupon($data['coupon_code']);
+
+            $discount = 0;
+
+            if ($coupon) {
+                $totalAmount = $coupon->calculateValue($data['currency'], $amount);
+                $discount = $coupon->calculateDeduction($data['currency'], $amount);
+            }
+
+            $invoice = Invoice::create([
+                'amount' => $totalAmount,
+                'status' => 'pending',
+                'shipping_fee' => 0,
+                'discount' => $discount,
+                'user_id' => $user->id,
+                'currency' => $data['currency'],
+                'billing_information' => null,
+                'trx_id' => $trxId,
+                'coupon_id' => $coupon?->id,
+            ]);
+
+            $invoice->items()->createMany($invoiceItems);
+            $paymentUrl = $this->generatePaymentLink($invoice);
+            DB::commit();
+
+            Mail::to($user->email)->send(new InvoiceMail($invoice));
+
+            return $this->success(['payment_url' => $paymentUrl], 'Invoice created successfully.');
+
+        } catch (\Exception|\Throwable $e) {
+            DB::rollBack();
+            return $this->failed(null, StatusCode::InternalServerError->value, $e->getMessage());
+        }
+
+    }
 
 
     public function eventCheckout(Request $request)

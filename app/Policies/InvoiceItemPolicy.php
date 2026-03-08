@@ -17,4 +17,9 @@ class InvoiceItemPolicy
         return $user->role === 'admin' || $isOwner;
     }
 
+    public function viewProgram(User $user, InvoiceItem $invoiceItem): bool
+    {
+        return (int)$invoiceItem->invoice->user_id === (int)$user->id && $invoiceItem->invoice->status === 'paid';
+    }
+
 }
