@@ -45,8 +45,8 @@ class EventsController extends Controller
             'access' => $event->access,
             'type' => $event->type,
             'category' => [
-                'id' => (string)$event->category->id,
-                'name' => $event->category->name,
+                'id' => (string)$event->category?->id,
+                'name' => $event->category?->name,
             ],
             'what_to_expect' => json_decode($event->what_to_expect),
             'who_to_expect' => json_decode($event->who_to_expect),
