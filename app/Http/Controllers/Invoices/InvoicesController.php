@@ -16,6 +16,16 @@ class InvoicesController extends Controller
 {
     use Pagination;
 
+    public function viewAllPurchases(Request $request)
+    {
+        $invoiceItems = InvoiceItem::filter()->latest()->paginate(12);
+        $list = PurchasedItemResource::collection($invoiceItems);
+
+        $data = $this->paginatedData($invoiceItems, $list);
+
+        return $this->success($data);
+    }
+
     public function purchases(Request $request)
     {
         $user = $request->user();

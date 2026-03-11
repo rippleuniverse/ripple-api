@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -51,6 +52,20 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function scopeFilter(Builder $builder)
+    {
+        $builder->when(request('search'), function ($query, $search) {
+            $query->where('full_name', 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%");
+        });
+        $builder->when(request('role'), function ($query, $role) {
+            $query->where('role', $role);
+        });
+        $builder->when(request('status'), function ($query, $status) {
+            $query->where('status', $status);
+        });
     }
 
     public function otps(): HasMany

@@ -190,6 +190,8 @@ namespace('App\Http\Controllers')->group(function () {
             VerifiedMiddleware::class,
         ])->group(function () {
             Route::get('purchases', 'Invoices\InvoicesController@purchases');
+            Route::get('purchases/all', 'Invoices\InvoicesController@viewAllPurchases')
+                ->middleware(RoleAuthorizeMiddleware::class . ':admin');
             Route::get('purchases/{item}', 'Invoices\InvoicesController@purchase');
             Route::get('purchases/{item}/download-program', 'Invoices\InvoicesController@downloadProgramFile');
         });
@@ -209,6 +211,32 @@ namespace('App\Http\Controllers')->group(function () {
         Route::post('site-login', 'Settings\SettingsController@siteLogin');
         Route::get('shipping-fees', 'Settings\SettingsController@shippingFee');
         Route::get('check-site-lock-status', 'Settings\SettingsController@checkSiteLockStatus');
+    });
+
+    Route::prefix('users')->group(function () {
+        Route::middleware([
+            'auth:sanctum',
+            VerifiedMiddleware::class,
+            RoleAuthorizeMiddleware::class . ':admin'
+        ])
+            ->group(function () {
+                Route::get('', 'User\UsersController@viewAllUsers');
+                Route::get('staffs', 'User\UsersController@viewStaffs');
+                Route::get('staffs/{user}', 'User\UsersController@viewStaff');
+                Route::get('{user}', 'User\UsersController@viewUser');
+                Route::patch('{user}/change-status', 'User\UsersController@changeStatus');
+            });
+    });
+
+
+    Route::prefix('dashboard')->group(function () {
+        Route::middleware([
+            'auth:sanctum',
+            VerifiedMiddleware::class,
+            RoleAuthorizeMiddleware::class . ':admin'
+        ])->group(function () {
+            Route::get('admin/overview', 'Dashboard\AdminController@overview');
+        });
     });
 
     Route::prefix('webhook')->group(function () {

@@ -19,6 +19,7 @@ class PurchasedItemResource extends JsonResource
             'quantity' => $this->quantity,
             'unit_price' => currencyFormat($this->unit_price, $this->invoice->currency),
             'product_id' => $this->product_id,
+            'created_at' => $this->created_at->format('M d, Y'),
             'invoice' => [
                 'id' => (string)$this->invoice_id,
                 'status' => $this->invoice->status,
@@ -29,11 +30,16 @@ class PurchasedItemResource extends JsonResource
                 'metadata' => $this->invoice->metadata ? sanitizedJsonDecode($this->invoice->metadata, true) : null,
             ],
             'product_type' => $this->product_type,
-            'item' => [
+            'item' => $this->item ? [
                 'featured_image' => $this->getFilePath($this->item->featured_image),
                 'name' => $this->product_type === 'program' ? $this->item->name : $this->item->title
-            ],
+            ] : null,
             'total' => currencyFormat($this->total, $this->invoice->currency),
+            'user' => $this->invoice->user ? [
+                'id' => (string)$this->invoice->user_id,
+                'full_name' => $this->invoice->user->full_name,
+                'email' => $this->invoice->user->email,
+            ] : null
         ];
     }
 }

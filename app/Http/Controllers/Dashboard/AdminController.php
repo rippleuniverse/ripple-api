@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\Event;
 use App\Models\InvoiceItem;
 use App\Models\JobApplication;
 use App\Models\OpenRole;
@@ -15,15 +16,28 @@ class AdminController extends Controller
     public function overview(Request $request)
     {
         $programs = Program::count();
+        $events = Event::count();
+        $purchasedEvents = InvoiceItem::where('product_type', 'event')->count();
         $purchasedPrograms = InvoiceItem::where('product_type', 'program')->count();
         $totalUsers = User::count();
         $jobsListed = OpenRole::count();
         $jobApplications = JobApplication::count();
-        $purchasedProgramsAmount = InvoiceItem::where('product_type', 'program')
-            ->selectRaw('SUM(quantity * unit_price) as total')
-            ->value('total') ?? 0;
-        $purchasedEventsAmount = InvoiceItem::where('product_type', 'event')
-            ->selectRaw('SUM(quantity * unit_price) as total')
-            ->value('total') ?? 0;
+
+        $data = [
+            'programs' => $programs,
+            'purchased_programs' => $purchasedPrograms,
+            'total_users' => $totalUsers,
+            'jobs_listed' => $jobsListed,
+            'job_applications' => $jobApplications,
+            'events' => $events,
+            'purchased_events' => $purchasedEvents,
+        ];
+
+        return $this->success($data);
+    }
+
+    public function stats()
+    {
+
     }
 }
