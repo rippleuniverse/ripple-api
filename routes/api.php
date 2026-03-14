@@ -223,6 +223,7 @@ namespace('App\Http\Controllers')->group(function () {
             ->group(function () {
                 Route::get('', 'User\UsersController@viewAllUsers');
                 Route::get('staffs', 'User\UsersController@viewStaffs');
+                Route::post('create-admin', 'User\UsersController@createAdmin');
                 Route::get('staffs/{user}', 'User\UsersController@viewStaff');
                 Route::get('{user}', 'User\UsersController@viewUser');
                 Route::patch('{user}/change-status', 'User\UsersController@changeStatus');
