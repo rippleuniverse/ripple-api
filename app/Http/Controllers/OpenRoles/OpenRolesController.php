@@ -29,6 +29,12 @@ class OpenRolesController extends Controller
         return $this->success(RoleResource::collection($roles));
     }
 
+    public function homeOverview()
+    {
+        $roles = OpenRole::latest()->take(3)->get();
+        return $this->success(RoleResource::collection($roles));
+    }
+
     public function viewAllWithoutPagination()
     {
         $roles = OpenRole::all();

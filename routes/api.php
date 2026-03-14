@@ -121,6 +121,7 @@ namespace('App\Http\Controllers')->group(function () {
 
         Route::get('', 'OpenRoles\OpenRolesController@viewAll');
         Route::get('overview', 'OpenRoles\OpenRolesController@overview');
+        Route::get('overview/home', 'OpenRoles\OpenRolesController@homeOverview');
         Route::get('{role}', 'OpenRoles\OpenRolesController@view');
     });
 
