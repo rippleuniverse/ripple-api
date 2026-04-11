@@ -37,12 +37,12 @@ class WebhookController extends Controller
         $data = $request->data;
         $reference = $data['reference'];
         $invoice = Invoice::where('trx_id', $reference)->first();
-        $amount = (float)$data['amount'];
+        $amount = (float) $data['amount'];
 
         if (!$invoice) {
             return response()->json(['message' => 'Invoice not found'], 404);
         }
-        $invoiceAmount = (float)$invoice->amount * 100;
+        $invoiceAmount = (float) $invoice->amount * 100;
 
         if ($invoiceAmount !== $amount) {
             return response()->json(['message' => 'Invalid amount'], 400);
@@ -63,7 +63,7 @@ class WebhookController extends Controller
     public function stripe(Request $request)
     {
 
-//        try {
+        //        try {
         $payload = @file_get_contents('php://input');
         $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
         $event = null;
@@ -81,20 +81,20 @@ class WebhookController extends Controller
         }
 
         if (!in_array($event->type, $this::STRIPE_EVENTS)) {
-            return response()->json(['message' => 'Invalid event'], 400);
+            return response()->json(['message' => 'Invalid event'], 200);
         }
 
         $data = $event->data->object;
         $reference = $data['metadata']['reference'];
 
         $invoice = Invoice::where('trx_id', $reference)->first();
-        $amount = (float)($data['amount_total'] / 100);
+        $amount = (float) ($data['amount_total'] / 100);
 
 
         if (!$invoice) {
             return response()->json(['message' => 'Invoice not found'], 404);
         }
-        $invoiceAmount = (float)$invoice->amount;
+        $invoiceAmount = (float) $invoice->amount;
 
         if ($invoiceAmount !== $amount) {
             return response()->json(['message' => 'Invalid amount'], 400);
@@ -113,16 +113,17 @@ class WebhookController extends Controller
 
         return response(null, StatusCode::Success->value);
 
-//        } catch (\Exception $e) {
+        //        } catch (\Exception $e) {
 //            return response()->json(['message' => $e->getMessage()], 400);
 //        }
     }
 
 
-//    Update single-use coupon for users
+    //    Update single-use coupon for users
     private function updateUserCoupon(Invoice $invoice)
     {
-        if (!$invoice->coupon || $invoice->coupon?->user_id !== $invoice->user_id) return;
+        if (!$invoice->coupon || $invoice->coupon?->user_id !== $invoice->user_id)
+            return;
 
         $invoice->coupon->update([
             'is_active' => false
