@@ -16,6 +16,7 @@ use App\Traits\Stripe;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -84,6 +85,7 @@ class CheckoutController extends Controller
 
         } catch (\Exception|\Throwable $e) {
             DB::rollBack();
+            Log::error($e->getMessage(), $e->getTrace());
             return $this->failed(null, StatusCode::InternalServerError->value, $e->getMessage());
         }
 
@@ -347,8 +349,10 @@ class CheckoutController extends Controller
             'Authorization' => 'Bearer ' . config('services.paystack.secret_key')
         ];
         $billingInfomation = json_decode($invoice->billing_information, true);
+
+
         $postData = [
-            'email' => $billingInfomation['email'],
+            'email' => gettype($billingInfomation) === 'array' ? $billingInfomation['email'] : $invoice->user->email,
             'amount' => (string)($amount * 100),
             'reference' => $invoice->trx_id,
             'callback_url' => config('services.paystack.callback_url'),
