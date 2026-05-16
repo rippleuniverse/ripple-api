@@ -16,7 +16,6 @@ use App\Traits\Stripe;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -85,7 +84,6 @@ class CheckoutController extends Controller
 
         } catch (\Exception|\Throwable $e) {
             DB::rollBack();
-            Log::error($e->getMessage(), $e->getTrace());
             return $this->failed(null, StatusCode::InternalServerError->value, $e->getMessage());
         }
 
