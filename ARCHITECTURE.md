@@ -11,6 +11,7 @@
 7. [Core Modules](#core-modules)
 8. [Payment Processing](#payment-processing)
 9. [File Management](#file-management)
+
 10. [Email & Notifications](#email--notifications)
 11. [Key Traits & Utilities](#key-traits--utilities)
 12. [Development & Deployment](#development--deployment)
